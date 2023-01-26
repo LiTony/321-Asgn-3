@@ -21,14 +21,14 @@ bob_prehash = dh_proc(alice_message, bob_secret, Q)
 
 alice_prehash_bytes = alice_prehash.to_bytes((alice_prehash.bit_length() + 7) // 8, 'big')
 bob_prehash_bytes = bob_prehash.to_bytes((bob_prehash.bit_length() + 7) // 8, 'big')
-print("Alice, Bob Prehashes\n")
+print("Alice, Bob Prehashes")
 print(alice_prehash)
 print(bob_prehash)
 
 alice_key = hashlib.sha256(bytes(alice_prehash_bytes))
 bob_key = hashlib.sha256(bytes(bob_prehash_bytes))
 
-print("Alice, Bob Keys\n")
+print("Alice, Bob Keys")
 print(alice_key.digest())
 print(bob_key.digest())
 

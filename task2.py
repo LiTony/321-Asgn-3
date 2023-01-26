@@ -13,9 +13,7 @@ def pad_128_bits(message):
     if offset == 16:
         offset = 0
     offsetArr = [offset for x in range(offset)]
-    print("arr: \n", offsetArr)
     offsetBytes = bytearray(offsetArr)
-    print("bytes: \n", offsetBytes)
     message = message + offsetBytes
     return message
 
@@ -44,7 +42,7 @@ def part1():
     alice_prehash_bytes = alice_prehash.to_bytes((alice_prehash.bit_length() + 7) // 8, 'big')
     bob_prehash_bytes = bob_prehash.to_bytes((bob_prehash.bit_length() + 7) // 8, 'big')
     mallory_prehash_bytes = mallory_prehash.to_bytes((mallory_prehash.bit_length() + 7) // 8, 'big')
-    print("Alice, Bob, Mallory Prehashes\n")
+    print("Alice, Bob, Mallory Prehashes")
     print(alice_prehash)
     print(bob_prehash)
     print(mallory_prehash)
@@ -53,10 +51,10 @@ def part1():
     bob_key = hashlib.sha256(bytes(bob_prehash_bytes))
     mallory_key = hashlib.sha256(bytes(mallory_prehash_bytes))
 
-    print("Alice, Bob Keys\n")
+    print("Alice, Bob Keys")
     print(alice_key.digest())
     print(bob_key.digest())
-    print("Mallory's Sneaky Key Steal\n")
+    print("Mallory's Sneaky Key Steal")
     print(mallory_key.digest())
 
     if alice_key.digest() == bob_key.digest():
@@ -64,6 +62,7 @@ def part1():
     else:
         print("exchange failure!")
 
+    # cipher with leaked key
     iv = b"0123456789012345"
     aesCipher = AES.new(alice_key.digest(), AES.MODE_CBC, iv) #alice_key = bob_key = mallory_key
     malloryCipher = AES.new(mallory_key.digest(), AES.MODE_CBC, iv)
@@ -74,28 +73,63 @@ def part1():
     bCM_ENC = aesCipher.encrypt(bobChatMessage)
 
     print("Mallory can decrypt this")
-    print("Mallory sees alice say: \n")
+    print("Mallory sees alice say:")
     print(malloryCipher.decrypt(aCM_ENC))
-    print("Mallory sees bob say: \n")
+    print("Mallory sees bob say:")
     print(malloryCipher.decrypt(bCM_ENC))
     return
 
 def part2():
-    alice_message = dh_proc(ALPHA, alice_secret, Q)
-    bob_message = dh_proc(ALPHA, bob_secret, Q)
-
     #Task 2 (2)
     #Mallory Interception START
-
-    
-
+    fake_alpha = 1
     #Mallory Interception END
+
+    alice_message = dh_proc(fake_alpha, alice_secret, Q) # Ya
+    bob_message = dh_proc(fake_alpha, bob_secret, Q) #Yb
+
+    alice_prehash = dh_proc(bob_message, alice_secret, Q)
+    bob_prehash = dh_proc(alice_message, bob_secret, Q)
+    mallory_prehash = dh_proc(1, bob_secret, Q)
+
+    alice_prehash_bytes = alice_prehash.to_bytes((alice_prehash.bit_length() + 7) // 8, 'big')
+    bob_prehash_bytes = bob_prehash.to_bytes((bob_prehash.bit_length() + 7) // 8, 'big')
+    mallory_prehash_bytes = mallory_prehash.to_bytes((mallory_prehash.bit_length() + 7) // 8, 'big')
+    print("Alice, Bob, Mallory Prehashes")
+    print(alice_prehash)
+    print(bob_prehash)
+    print(mallory_prehash)
+
+    alice_key = hashlib.sha256(bytes(alice_prehash_bytes))
+    bob_key = hashlib.sha256(bytes(bob_prehash_bytes))
+    mallory_key = hashlib.sha256(bytes(mallory_prehash_bytes))
+
+    if alice_key.digest() == bob_key.digest():
+        print("exchange success!")
+    else:
+        print("exchange failure!")
+
+    # cipher with leaked key
+    iv = b"0123456789012345"
+    aesCipher = AES.new(alice_key.digest(), AES.MODE_CBC, iv) #alice_key = bob_key = mallory_key
+    malloryCipher = AES.new(mallory_key.digest(), AES.MODE_CBC, iv)
+
+    aliceChatMessage = pad_128_bits(b"Hi Bob, how are you?")
+    bobChatMessage = pad_128_bits(b"Hi Alice, how are you?")
+    aCM_ENC = aesCipher.encrypt(aliceChatMessage)
+    bCM_ENC = aesCipher.encrypt(bobChatMessage)
+
+    print("Mallory can decrypt this")
+    print("Mallory sees alice say:")
+    print(malloryCipher.decrypt(aCM_ENC))
+    print("Mallory sees bob say:")
+    print(malloryCipher.decrypt(bCM_ENC))
 
     return
 
 def main():
-    part1()
-    #part2()
+    #part1()
+    part2()
 
 if __name__ == "__main__":
     main()
