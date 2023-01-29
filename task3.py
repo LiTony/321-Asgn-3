@@ -27,13 +27,6 @@ def extEuclidAlg(a, b):
         t_prev = t_temp
         remainder = a % b
     return (s_prev, t_prev)
-# finds mod multiplicative inverse of num mod mod
-def findInverse(num, mod):
-    for i in range(mod):
-        if (i * num) % mod == 1:
-            return i
-    return None
-
 
     
 def test():
@@ -43,6 +36,7 @@ def test():
     euler_totient = (p-1) * (q-1)
 
     pub_key = (E, n)
+    # get multiplicative inverse d
     d = abs(extEuclidAlg(E, euler_totient)[0])
     pri_key = (d, n)
 
